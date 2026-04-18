@@ -146,12 +146,12 @@ async function checkBalance() {
   data.forEach(user => {
 
     let matchUser =
-      (user.account_no == input || user.name.toLowerCase() == input);
+  (user.account_no.toString() == input || user.name.toLowerCase() == input);
 
-    let matchContact =
-      (user.mobile == contact || user.email == contact);
+let matchContact =
+  (user.mobile == contact || user.email == contact);
 
-    if (matchUser && matchContact && contact !== "" && user.pin == pin) {
+if (matchUser && matchContact && contact !== "" && user.pin.toString() == pin) {
 
       document.getElementById("nameText").innerText =
         user.name.toUpperCase();
