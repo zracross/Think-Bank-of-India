@@ -20,7 +20,6 @@
       border-radius: 15px;
       width: 320px;
       text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
 
     input {
@@ -44,17 +43,16 @@
 
     button:disabled {
       background: gray;
-      cursor: not-allowed;
-    }
-
-    .result {
-      margin-top: 10px;
-      display: none;
     }
 
     #timerText {
       font-size: 12px;
       color: gray;
+    }
+
+    .result {
+      margin-top: 10px;
+      display: none;
     }
   </style>
 </head>
@@ -71,7 +69,7 @@
   <p id="timerText"></p>
 
   <input id="otp" placeholder="Enter OTP">
-  <input id="pin" placeholder="PIN" type="password">
+  <input id="pin" type="password" placeholder="PIN">
 
   <button onclick="checkBalance()">Check Balance</button>
 
@@ -97,26 +95,26 @@ async function sendOTP() {
     return;
   }
 
-  if (countdown < 60 && countdown > 0) {
-    alert("Wait " + countdown + " sec ⏱️");
-    return;
-  }
-
   generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
   otpTime = Date.now();
   countdown = 60;
 
-  await fetch("https://script.google.com/macros/s/AKfycbyx_jOeBFaMljpWID6_49evio8z6IeMN6y6lAUfLaydnAGhp2JLv-6FmYf4xwzKxrAbUw/exec", {
-    method: "POST",
-    body: JSON.stringify({
-      email: email,
-      otp: generatedOTP
-    })
-  });
+  try {
+    await fetch("https://script.google.com/macros/s/AKfycbyx_jOeBFaMljpWID6_49evio8z6IeMN6y6lAUfLaydnAGhp2JLv-6FmYf4xwzKxrAbUw/exec", {
+      method: "POST",
+      body: JSON.stringify({
+        email: email,
+        otp: generatedOTP
+      })
+    });
 
-  alert("OTP sent to email 📧");
+    alert("OTP sent to email 📧");
+    startTimer();
 
-  startTimer();
+  } catch (err) {
+    alert("Error sending OTP ❌");
+    console.log(err);
+  }
 }
 
 // ⏱️ TIMER
@@ -147,13 +145,11 @@ async function checkBalance() {
   let pin = document.getElementById("pin").value;
   let otp = document.getElementById("otp").value;
 
-  // OTP expiry
   if (Date.now() - otpTime > 120000) {
     alert("OTP expired ⏱️");
     return;
   }
 
-  // OTP check
   if (otp !== generatedOTP) {
     alert("Wrong OTP ❌");
     return;
@@ -175,7 +171,6 @@ async function checkBalance() {
       document.getElementById("bal").innerText = "Balance: ₹" + user.balance;
 
       document.getElementById("result").style.display = "block";
-
       found = true;
     }
   });
@@ -183,10 +178,6 @@ async function checkBalance() {
   if (!found) {
     alert("Invalid details ❌");
   }
-
-  // clear inputs
-  document.getElementById("otp").value = "";
-  document.getElementById("pin").value = "";
 }
 </script>
 
