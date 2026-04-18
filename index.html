@@ -1,22 +1,138 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Think Bank Balance</title>
+  <title>Think Bank of India</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e40af);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      width: 330px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+      color: #1e40af;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: gray;
+      margin-bottom: 15px;
+    }
+
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+      outline: none;
+    }
+
+    .pin-box {
+      position: relative;
+    }
+
+    .show-btn {
+      position: absolute;
+      right: 18px;
+      top: 14px;
+      font-size: 12px;
+      color: #2563eb;
+      cursor: pointer;
+    }
+
+    button {
+      background: linear-gradient(90deg, #2563eb, #1d4ed8);
+      color: white;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .result-card {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      display: none;
+    }
+
+    .acc {
+      font-size: 13px;
+      color: gray;
+    }
+
+    .bal {
+      font-size: 20px;
+      color: #16a34a;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Think Bank - Check Balance</h2>
+<div class="card">
+  <div class="logo">🏦 Think Bank of India</div>
+  <div class="subtitle">Secure Balance Check</div>
 
-<input id="user" placeholder="Account / Mobile / Email"><br><br>
-<input id="pin" type="password" placeholder="PIN"><br><br>
+  <input id="acno" placeholder="Account Number">
+  <input id="contact" placeholder="Mobile / Email">
 
-<button onclick="checkBalance()">Check Balance</button>
+  <div class="pin-box">
+    <input id="pin" type="password" placeholder="PIN">
+    <span class="show-btn" onclick="togglePin()">👁</span>
+  </div>
 
-<p id="result"></p>
+  <button onclick="checkBalance()">Check Balance</button>
+
+  <div class="result-card" id="resultBox">
+    <div class="acc" id="accText"></div>
+    <div class="bal" id="balText"></div>
+  </div>
+</div>
 
 <script>
+function togglePin() {
+  let pin = document.getElementById("pin");
+  pin.type = pin.type === "password" ? "text" : "password";
+}
+
 async function checkBalance() {
-  let input = document.getElementById("user").value;
+  let acno = document.getElementById("acno").value;
+  let contact = document.getElementById("contact").value;
   let pin = document.getElementById("pin").value;
 
   let res = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMUQPh6sy6dI5JxEa53_b0DSThoUigS4CKVAhxIZkq8bERzOrG7uTw_E9QFKGBdYw39JjkHLfUXXgNUEDBSmUCg7zgy9neJZaPRnpHELh9oWity-T9eA3awFAMN6Axkt_QENDPVTfBePlljfxQfyjyEKFbb7MhFWX_SzpCyTBDD382U4UTSvjRWeThXqEVA2npwiDlNIVFgkjJK74a73-oxB1lgpCJ9aOZdS71P6eRpJmlbXcC2_UMjgblwaeNSptkOmrHaRXmTl6gXlyWd-AA623IIxTQ&lib=M4bnN0L_hTmaU7omQxBfP1wCLwtsw3F_D");
@@ -26,20 +142,30 @@ async function checkBalance() {
 
   data.forEach(user => {
     if (
-      (user.account_no == input ||
-       user.mobile == input ||
-       user.email == input) &&
+      user.account_no == acno &&
+      (user.mobile == contact || user.email == contact) &&
       user.pin == pin
     ) {
-      document.getElementById("result").innerText =
-        "Balance: ₹" + user.balance;
+      document.getElementById("accText").innerText =
+        "Account No: " + user.account_no;
+
+      document.getElementById("balText").innerText =
+        "₹ " + user.balance;
+
+      document.getElementById("resultBox").style.display = "block";
+
       found = true;
     }
   });
 
   if (!found) {
-    document.getElementById("result").innerText = "Invalid details";
+    alert("Invalid details ❌");
   }
+
+  // Clear input
+  document.getElementById("acno").value = "";
+  document.getElementById("contact").value = "";
+  document.getElementById("pin").value = "";
 }
 </script>
 
