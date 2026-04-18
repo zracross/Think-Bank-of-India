@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Think Bank Balance</title>
+</head>
+<body>
+
+<h2>Think Bank - Check Balance</h2>
+
+<input id="user" placeholder="Account / Mobile / Email"><br><br>
+<input id="pin" type="password" placeholder="PIN"><br><br>
+
+<button onclick="checkBalance()">Check Balance</button>
+
+<p id="result"></p>
+
+<script>
+async function checkBalance() {
+  let input = document.getElementById("user").value;
+  let pin = document.getElementById("pin").value;
+
+  let res = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMUQPh6sy6dI5JxEa53_b0DSThoUigS4CKVAhxIZkq8bERzOrG7uTw_E9QFKGBdYw39JjkHLfUXXgNUEDBSmUCg7zgy9neJZaPRnpHELh9oWity-T9eA3awFAMN6Axkt_QENDPVTfBePlljfxQfyjyEKFbb7MhFWX_SzpCyTBDD382U4UTSvjRWeThXqEVA2npwiDlNIVFgkjJK74a73-oxB1lgpCJ9aOZdS71P6eRpJmlbXcC2_UMjgblwaeNSptkOmrHaRXmTl6gXlyWd-AA623IIxTQ&lib=M4bnN0L_hTmaU7omQxBfP1wCLwtsw3F_D");
+  let data = await res.json();
+
+  let found = false;
+
+  data.forEach(user => {
+    if (
+      (user.account_no == input ||
+       user.mobile == input ||
+       user.email == input) &&
+      user.pin == pin
+    ) {
+      document.getElementById("result").innerText =
+        "Balance: ₹" + user.balance;
+      found = true;
+    }
+  });
+
+  if (!found) {
+    document.getElementById("result").innerText = "Invalid details";
+  }
+}
+</script>
+
+</body>
+</html>
