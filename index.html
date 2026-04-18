@@ -100,7 +100,7 @@ async function sendOTP() {
   countdown = 60;
 
   try {
-    await fetch("https://script.google.com/macros/s/AKfycbyx_jOeBFaMljpWID6_49evio8z6IeMN6y6lAUfLaydnAGhp2JLv-6FmYf4xwzKxrAbUw/exec", {
+    await fetch("https://script.google.com/macros/s/AKfycbxeVVinxlDc46wR-6HUVgIguVXKkQwSgiAzgSlOnQdYl8vXzDZHCuaUVBwfkm1S3veN8g/exec", {
       method: "POST",
       body: JSON.stringify({
         email: email,
@@ -155,7 +155,7 @@ async function checkBalance() {
     return;
   }
 
-  let res = await fetch("https://script.google.com/macros/s/AKfycbyx_jOeBFaMljpWID6_49evio8z6IeMN6y6lAUfLaydnAGhp2JLv-6FmYf4xwzKxrAbUw/exec");
+  let res = await fetch("https://script.google.com/macros/s/AKfycbxeVVinxlDc46wR-6HUVgIguVXKkQwSgiAzgSlOnQdYl8vXzDZHCuaUVBwfkm1S3veN8g/exec");
   let data = await res.json();
 
   let found = false;
