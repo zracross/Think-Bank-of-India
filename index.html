@@ -73,11 +73,6 @@
       font-size: 15px;
       margin-top: 10px;
       cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      opacity: 0.9;
     }
 
     .result-card {
@@ -86,6 +81,11 @@
       border-radius: 10px;
       background: #f1f5f9;
       display: none;
+    }
+
+    .name {
+      font-weight: bold;
+      font-size: 16px;
     }
 
     .acc {
@@ -108,7 +108,9 @@
   <div class="logo">🏦 Think Bank of India</div>
   <div class="subtitle">Secure Balance Check</div>
 
-  <input id="acno" placeholder="Account Number">
+  <!-- Updated input -->
+  <input id="user" placeholder="Name or Account Number">
+
   <input id="contact" placeholder="Mobile / Email">
 
   <div class="pin-box">
@@ -119,6 +121,7 @@
   <button onclick="checkBalance()">Check Balance</button>
 
   <div class="result-card" id="resultBox">
+    <div class="name" id="nameText"></div>
     <div class="acc" id="accText"></div>
     <div class="bal" id="balText"></div>
   </div>
@@ -131,8 +134,8 @@ function togglePin() {
 }
 
 async function checkBalance() {
-  let acno = document.getElementById("acno").value;
-  let contact = document.getElementById("contact").value;
+  let input = document.getElementById("user").value.toLowerCase().trim();
+  let contact = document.getElementById("contact").value.trim();
   let pin = document.getElementById("pin").value;
 
   let res = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMUQPh6sy6dI5JxEa53_b0DSThoUigS4CKVAhxIZkq8bERzOrG7uTw_E9QFKGBdYw39JjkHLfUXXgNUEDBSmUCg7zgy9neJZaPRnpHELh9oWity-T9eA3awFAMN6Axkt_QENDPVTfBePlljfxQfyjyEKFbb7MhFWX_SzpCyTBDD382U4UTSvjRWeThXqEVA2npwiDlNIVFgkjJK74a73-oxB1lgpCJ9aOZdS71P6eRpJmlbXcC2_UMjgblwaeNSptkOmrHaRXmTl6gXlyWd-AA623IIxTQ&lib=M4bnN0L_hTmaU7omQxBfP1wCLwtsw3F_D");
@@ -141,11 +144,18 @@ async function checkBalance() {
   let found = false;
 
   data.forEach(user => {
-    if (
-      user.account_no == acno &&
-      (user.mobile == contact || user.email == contact) &&
-      user.pin == pin
-    ) {
+
+    let matchUser =
+      (user.account_no == input || user.name.toLowerCase() == input);
+
+    let matchContact =
+      (user.mobile == contact || user.email == contact);
+
+    if (matchUser && matchContact && contact !== "" && user.pin == pin) {
+
+      document.getElementById("nameText").innerText =
+        user.name.toUpperCase();
+
       document.getElementById("accText").innerText =
         "Account No: " + user.account_no;
 
@@ -159,11 +169,11 @@ async function checkBalance() {
   });
 
   if (!found) {
-    alert("Invalid details ❌");
+    alert("Invalid or incomplete details ❌");
   }
 
-  // Clear input
-  document.getElementById("acno").value = "";
+  // clear inputs
+  document.getElementById("user").value = "";
   document.getElementById("contact").value = "";
   document.getElementById("pin").value = "";
 }
