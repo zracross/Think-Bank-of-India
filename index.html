@@ -6,34 +6,20 @@
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI';
       background: linear-gradient(135deg, #0f172a, #1e40af);
-      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 100vh;
     }
 
     .card {
       background: white;
       padding: 25px;
-      border-radius: 16px;
-      width: 330px;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+      border-radius: 15px;
+      width: 320px;
       text-align: center;
-    }
-
-    .logo {
-      font-size: 22px;
-      font-weight: bold;
-      color: #1e40af;
-      margin-bottom: 5px;
-    }
-
-    .subtitle {
-      font-size: 12px;
-      color: gray;
-      margin-bottom: 15px;
     }
 
     input {
@@ -42,62 +28,21 @@
       margin: 8px 0;
       border-radius: 8px;
       border: 1px solid #ddd;
-      font-size: 14px;
-    }
-
-    input:focus {
-      border-color: #2563eb;
-      outline: none;
-    }
-
-    .pin-box {
-      position: relative;
-    }
-
-    .show-btn {
-      position: absolute;
-      right: 18px;
-      top: 14px;
-      font-size: 12px;
-      color: #2563eb;
-      cursor: pointer;
     }
 
     button {
-      background: linear-gradient(90deg, #2563eb, #1d4ed8);
+      background: #2563eb;
       color: white;
       padding: 12px;
       width: 100%;
       border: none;
-      border-radius: 10px;
-      font-size: 15px;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+
+    .result {
       margin-top: 10px;
-      cursor: pointer;
-    }
-
-    .result-card {
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 10px;
-      background: #f1f5f9;
       display: none;
-    }
-
-    .name {
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    .acc {
-      font-size: 13px;
-      color: gray;
-    }
-
-    .bal {
-      font-size: 20px;
-      color: #16a34a;
-      font-weight: bold;
-      margin-top: 5px;
     }
   </style>
 </head>
@@ -105,77 +50,76 @@
 <body>
 
 <div class="card">
-  <div class="logo">🏦 Think Bank of India</div>
-  <div class="subtitle">Secure Balance Check</div>
+  <h3>🏦 Think Bank</h3>
 
-  <!-- Updated input -->
-  <input id="user" placeholder="Name or Account Number">
+  <input id="user" placeholder="Name or Account No">
+  <input id="email" placeholder="Email">
 
-  <input id="contact" placeholder="Mobile / Email">
+  <button onclick="sendOTP()">Send OTP</button>
 
-  <div class="pin-box">
-    <input id="pin" type="password" placeholder="PIN">
-    <span class="show-btn" onclick="togglePin()">👁</span>
-  </div>
+  <input id="otp" placeholder="Enter OTP">
+  <input id="pin" placeholder="PIN" type="password">
 
   <button onclick="checkBalance()">Check Balance</button>
 
-  <div class="result-card" id="resultBox">
-    <div class="name" id="nameText"></div>
-    <div class="acc" id="accText"></div>
-    <div class="bal" id="balText"></div>
+  <div class="result" id="result">
+    <h4 id="name"></h4>
+    <p id="acc"></p>
+    <p id="bal"></p>
   </div>
 </div>
 
 <script>
-function togglePin() {
-  let pin = document.getElementById("pin");
-  pin.type = pin.type === "password" ? "text" : "password";
+let generatedOTP = "";
+
+async function sendOTP() {
+  let email = document.getElementById("email").value;
+
+  if (!email) {
+    alert("Enter email ❌");
+    return;
+  }
+
+  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+  await fetch("YOUR_SCRIPT_URL", {
+    method: "POST",
+    body: JSON.stringify({
+      email: email,
+      otp: generatedOTP
+    })
+  });
+
+  alert("OTP sent to email 📧");
 }
 
 async function checkBalance() {
-  let input = document.getElementById("user").value.toLowerCase().trim();
-  let contact = document.getElementById("contact").value.trim();
+  let input = document.getElementById("user").value.toLowerCase();
+  let email = document.getElementById("email").value;
   let pin = document.getElementById("pin").value;
+  let otp = document.getElementById("otp").value;
+
+  if (otp !== generatedOTP) {
+    alert("Wrong OTP ❌");
+    return;
+  }
 
   let res = await fetch("https://script.google.com/macros/s/AKfycbyx_jOeBFaMljpWID6_49evio8z6IeMN6y6lAUfLaydnAGhp2JLv-6FmYf4xwzKxrAbUw/exec");
   let data = await res.json();
 
-  let found = false;
-
   data.forEach(user => {
+    if (
+      (user.account_no.toString() == input || user.name.toLowerCase() == input) &&
+      user.email == email &&
+      user.pin == pin
+    ) {
+      document.getElementById("name").innerText = user.name.toUpperCase();
+      document.getElementById("acc").innerText = "Account: " + user.account_no;
+      document.getElementById("bal").innerText = "Balance: ₹" + user.balance;
 
-    let matchUser =
-  (user.account_no.toString() == input || user.name.toLowerCase() == input);
-
-let matchContact =
-  (user.mobile == contact || user.email == contact);
-
-if (matchUser && matchContact && contact !== "" && user.pin.toString() == pin) {
-
-      document.getElementById("nameText").innerText =
-        user.name.toUpperCase();
-
-      document.getElementById("accText").innerText =
-        "Account No: " + user.account_no;
-
-      document.getElementById("balText").innerText =
-        "₹ " + user.balance;
-
-      document.getElementById("resultBox").style.display = "block";
-
-      found = true;
+      document.getElementById("result").style.display = "block";
     }
   });
-
-  if (!found) {
-    alert("Invalid or incomplete details ❌");
-  }
-
-  // clear inputs
-  document.getElementById("user").value = "";
-  document.getElementById("contact").value = "";
-  document.getElementById("pin").value = "";
 }
 </script>
 
