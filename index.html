@@ -38,21 +38,11 @@
       border: none;
       border-radius: 8px;
       margin-top: 8px;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      background: gray;
     }
 
     #timerText {
       font-size: 12px;
       color: gray;
-    }
-
-    .captcha {
-      font-size: 14px;
-      margin-top: 5px;
     }
 
     .result {
@@ -70,14 +60,14 @@
   <input id="user" placeholder="Name or Account No">
   <input id="email" placeholder="Email">
 
+  <!-- CAPTCHA -->
+  <div id="captchaQ"></div>
+  <input id="captchaAns" placeholder="Enter CAPTCHA">
+
   <button id="otpBtn" onclick="sendOTP()">Send OTP</button>
   <p id="timerText"></p>
 
   <input id="otp" placeholder="Enter OTP">
-
-  <!-- CAPTCHA -->
-  <div class="captcha" id="captchaQ"></div>
-  <input id="captchaAns" placeholder="Enter CAPTCHA">
 
   <button onclick="checkBalance()">Check Balance</button>
 
@@ -96,9 +86,28 @@ let timerInterval = null;
 
 let captchaAnswer = 0;
 
-// 🔐 OTP
+// 🔢 CAPTCHA
+function generateCaptcha() {
+  let a = Math.floor(Math.random() * 10);
+  let b = Math.floor(Math.random() * 10);
+  captchaAnswer = a + b;
+
+  document.getElementById("captchaQ").innerText =
+    "Solve: " + a + " + " + b;
+}
+generateCaptcha();
+
+// 🔐 SEND OTP
 async function sendOTP() {
   let email = document.getElementById("email").value;
+  let cap = document.getElementById("captchaAns").value;
+
+  // CAPTCHA check BEFORE OTP
+  if (parseInt(cap) !== captchaAnswer) {
+    alert("Wrong CAPTCHA ❌");
+    generateCaptcha();
+    return;
+  }
 
   if (!email) {
     alert("Enter email ❌");
@@ -142,39 +151,17 @@ function startTimer() {
   }, 1000);
 }
 
-// 🔢 CAPTCHA GENERATE
-function generateCaptcha() {
-  let a = Math.floor(Math.random() * 10);
-  let b = Math.floor(Math.random() * 10);
-  captchaAnswer = a + b;
-
-  document.getElementById("captchaQ").innerText =
-    "Solve: " + a + " + " + b;
-}
-
-generateCaptcha();
-
-// 💰 CHECK
+// 💰 CHECK BALANCE
 async function checkBalance() {
   let input = document.getElementById("user").value.toLowerCase().trim();
   let email = document.getElementById("email").value.trim();
   let otp = document.getElementById("otp").value;
-  let cap = document.getElementById("captchaAns").value;
 
-  // CAPTCHA check
-  if (parseInt(cap) !== captchaAnswer) {
-    alert("Wrong CAPTCHA ❌");
-    generateCaptcha();
-    return;
-  }
-
-  // OTP expiry
   if (Date.now() - otpTime > 120000) {
     alert("OTP expired ⏱️");
     return;
   }
 
-  // OTP check
   if (otp !== generatedOTP) {
     alert("Wrong OTP ❌");
     return;
@@ -182,8 +169,6 @@ async function checkBalance() {
 
   let res = await fetch("https://script.google.com/macros/s/AKfycbzTfkw41vJ7OUUlTyN7MLg-aZB8ULTyKmNtMcrvyqzraArFLbjXX79YHvYtSF9zOML2Ag/exec");
   let data = await res.json();
-
-  let found = false;
 
   data.forEach(user => {
     if (
@@ -195,13 +180,8 @@ async function checkBalance() {
       document.getElementById("bal").innerText = "Balance: ₹" + user.balance;
 
       document.getElementById("result").style.display = "block";
-      found = true;
     }
   });
-
-  if (!found) {
-    alert("Invalid details ❌");
-  }
 }
 </script>
 
