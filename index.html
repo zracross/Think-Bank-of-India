@@ -1,3 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Think Bank of India</title>
+
+  <!-- Google reCAPTCHA -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI';
+      background: linear-gradient(135deg, #0f172a, #1e40af);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: gray;
+    }
+
+    #timerText {
+      font-size: 12px;
+      color: gray;
+    }
+
+    .result {
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h3>🏦 Think Bank</h3>
+
+  <input id="user" placeholder="Name or Account No">
+  <input id="email" placeholder="Email">
+
+  <!-- CAPTCHA -->
+  <div class="g-recaptcha" data-sitekey="6LfI2L4sAAAAAE34fUeKy29bF5ybeeuR0Ip1Hrit"></div>
+
+  <button id="otpBtn" onclick="sendOTP()">Send OTP</button>
+  <p id="timerText"></p>
+
+  <input id="otp" placeholder="Enter OTP">
+
+  <button onclick="checkBalance()">Check Balance</button>
+
+  <div class="result" id="result">
+    <h4 id="name"></h4>
+    <p id="acc"></p>
+    <p id="bal"></p>
+  </div>
+</div>
+
 <script>
 let generatedOTP = "";
 let otpTime = 0;
@@ -32,7 +120,6 @@ async function sendOTP() {
   });
 
   alert("OTP sent to email 📧");
-
   startTimer();
 }
 
@@ -83,7 +170,6 @@ async function checkBalance() {
     let userEmail = user.email.toLowerCase().trim();
     let userAcc = user.account_no.toString().trim();
 
-    // detect input type
     let isNumber = !isNaN(input);
 
     let matchUser = false;
@@ -110,7 +196,10 @@ async function checkBalance() {
     alert("Invalid details ❌");
   }
 
-  // 🔥 CAPTCHA clear after checking balance
+  // 🔥 CAPTCHA clear after check
   grecaptcha.reset();
 }
 </script>
+
+</body>
+</html>
