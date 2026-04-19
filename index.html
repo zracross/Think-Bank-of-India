@@ -50,6 +50,11 @@
       color: gray;
     }
 
+    .captcha {
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
     .result {
       margin-top: 10px;
       display: none;
@@ -69,7 +74,10 @@
   <p id="timerText"></p>
 
   <input id="otp" placeholder="Enter OTP">
-  <input id="pin" type="password" placeholder="PIN">
+
+  <!-- CAPTCHA -->
+  <div class="captcha" id="captchaQ"></div>
+  <input id="captchaAns" placeholder="Enter CAPTCHA">
 
   <button onclick="checkBalance()">Check Balance</button>
 
@@ -86,7 +94,9 @@ let otpTime = 0;
 let countdown = 60;
 let timerInterval = null;
 
-// 🔐 SEND OTP
+let captchaAnswer = 0;
+
+// 🔐 OTP
 async function sendOTP() {
   let email = document.getElementById("email").value;
 
@@ -99,22 +109,16 @@ async function sendOTP() {
   otpTime = Date.now();
   countdown = 60;
 
-  try {
-    await fetch("https://script.google.com/macros/s/AKfycbzTfkw41vJ7OUUlTyN7MLg-aZB8ULTyKmNtMcrvyqzraArFLbjXX79YHvYtSF9zOML2Ag/exec", {
-      method: "POST",
-      body: JSON.stringify({
-        email: email,
-        otp: generatedOTP
-      })
-    });
+  await fetch("https://script.google.com/macros/s/AKfycbzTfkw41vJ7OUUlTyN7MLg-aZB8ULTyKmNtMcrvyqzraArFLbjXX79YHvYtSF9zOML2Ag/exec", {
+    method: "POST",
+    body: JSON.stringify({
+      email: email,
+      otp: generatedOTP
+    })
+  });
 
-    alert("OTP sent to email 📧");
-    startTimer();
-
-  } catch (err) {
-    alert("Error sending OTP ❌");
-    console.log(err);
-  }
+  alert("OTP sent 📧");
+  startTimer();
 }
 
 // ⏱️ TIMER
@@ -129,7 +133,7 @@ function startTimer() {
   timerInterval = setInterval(() => {
     if (countdown <= 0) {
       clearInterval(timerInterval);
-      timerText.innerText = "You can resend OTP 🔁";
+      timerText.innerText = "Resend OTP 🔁";
       btn.disabled = false;
     } else {
       timerText.innerText = "Resend in " + countdown + " sec";
@@ -138,18 +142,39 @@ function startTimer() {
   }, 1000);
 }
 
-// 💰 CHECK BALANCE
+// 🔢 CAPTCHA GENERATE
+function generateCaptcha() {
+  let a = Math.floor(Math.random() * 10);
+  let b = Math.floor(Math.random() * 10);
+  captchaAnswer = a + b;
+
+  document.getElementById("captchaQ").innerText =
+    "Solve: " + a + " + " + b;
+}
+
+generateCaptcha();
+
+// 💰 CHECK
 async function checkBalance() {
   let input = document.getElementById("user").value.toLowerCase().trim();
   let email = document.getElementById("email").value.trim();
-  let pin = document.getElementById("pin").value;
   let otp = document.getElementById("otp").value;
+  let cap = document.getElementById("captchaAns").value;
 
+  // CAPTCHA check
+  if (parseInt(cap) !== captchaAnswer) {
+    alert("Wrong CAPTCHA ❌");
+    generateCaptcha();
+    return;
+  }
+
+  // OTP expiry
   if (Date.now() - otpTime > 120000) {
     alert("OTP expired ⏱️");
     return;
   }
 
+  // OTP check
   if (otp !== generatedOTP) {
     alert("Wrong OTP ❌");
     return;
@@ -163,8 +188,7 @@ async function checkBalance() {
   data.forEach(user => {
     if (
       (user.account_no.toString() == input || user.name.toLowerCase() == input) &&
-      user.email == email &&
-      user.pin.toString() == pin
+      user.email == email
     ) {
       document.getElementById("name").innerText = user.name.toUpperCase();
       document.getElementById("acc").innerText = "Account: " + user.account_no;
