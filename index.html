@@ -3,16 +3,12 @@
 <head>
   <title>Think Bank of India</title>
 
-  <!-- MOBILE FIX -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Google reCAPTCHA -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -52,16 +48,15 @@
       border-radius: 8px;
       margin-top: 8px;
       cursor: pointer;
-      font-size: 14px;
-    }
-
-    button:disabled {
-      background: gray;
     }
 
     #timerText {
       font-size: 12px;
       color: gray;
+    }
+
+    .hidden {
+      display: none;
     }
 
     .result {
@@ -70,14 +65,9 @@
     }
 
     #bal {
-      font-size: 18px;
       font-weight: bold;
+      font-size: 18px;
       color: #16a34a;
-    }
-
-    #withdrawText {
-      font-size: 13px;
-      margin-top: 5px;
     }
   </style>
 </head>
@@ -87,6 +77,7 @@
 <div class="card">
   <h3>🏦 Think Bank</h3>
 
+  <!-- STEP 1 -->
   <input id="user" placeholder="Name or Account No">
   <input id="email" placeholder="Email">
 
@@ -95,10 +86,13 @@
   <button id="otpBtn" onclick="sendOTP()">Send OTP</button>
   <p id="timerText"></p>
 
-  <input id="otp" placeholder="Enter OTP">
+  <!-- STEP 2 (hidden initially) -->
+  <div id="otpSection" class="hidden">
+    <input id="otp" placeholder="Enter OTP">
+    <button onclick="checkBalance()">Check Balance</button>
+  </div>
 
-  <button onclick="checkBalance()">Check Balance</button>
-
+  <!-- RESULT -->
   <div class="result" id="result">
     <h4 id="name"></h4>
     <p id="acc"></p>
@@ -119,7 +113,7 @@ async function sendOTP() {
 
   let captcha = grecaptcha.getResponse();
   if (!captcha) {
-    alert("Please verify CAPTCHA ❌");
+    alert("Verify CAPTCHA ❌");
     return;
   }
 
@@ -140,7 +134,11 @@ async function sendOTP() {
     })
   });
 
-  alert("OTP sent to email 📧");
+  alert("OTP sent 📧");
+
+  // show next step
+  document.getElementById("otpSection").classList.remove("hidden");
+
   startTimer();
 }
 
@@ -197,24 +195,24 @@ async function checkBalance() {
 
     if (matchUser && matchEmail) {
       let balance = parseFloat(user.balance);
+      let withdrawStatus = (user.withdraw || "").toString().trim().toLowerCase();
 
       document.getElementById("name").innerText = user.name.toUpperCase();
       document.getElementById("acc").innerText = "Account: " + user.account_no;
       document.getElementById("bal").innerText = "Balance: ₹" + balance;
 
-      let withdrawMsg = document.getElementById("withdrawText");
-      let withdrawStatus = (user.withdraw || "").toString().trim().toLowerCase();
+      let msg = document.getElementById("withdrawText");
 
       if (balance > 0 && withdrawStatus === "yes") {
-        withdrawMsg.innerText = "✔ Your balance is able to withdraw";
-        withdrawMsg.style.color = "green";
+        msg.innerText = "✔ Your balance is able to withdraw";
+        msg.style.color = "green";
       } 
       else if (balance > 0 && withdrawStatus === "no") {
-        withdrawMsg.innerText = "✖ Your balance is not able to withdraw";
-        withdrawMsg.style.color = "red";
+        msg.innerText = "✖ Your balance is not able to withdraw";
+        msg.style.color = "red";
       } 
-     else {
-       withdrawMsg.innerText = "";
+      else {
+        msg.innerText = "";
       }
 
       document.getElementById("result").style.display = "block";
