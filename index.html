@@ -3,6 +3,9 @@
 <head>
   <title>Think Bank of India</title>
 
+  <!-- Mobile responsive -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <!-- Google reCAPTCHA -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
@@ -19,19 +22,21 @@
 
     .card {
       background: white;
-      padding: 25px;
+      padding: 20px;
       border-radius: 15px;
-      width: 320px;
+      width: 90%;
+      max-width: 350px;
       text-align: center;
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
 
     input {
-      width: 90%;
+      width: 100%;
       padding: 12px;
       margin: 8px 0;
       border-radius: 8px;
       border: 1px solid #ddd;
+      font-size: 14px;
     }
 
     button {
@@ -43,6 +48,7 @@
       border-radius: 8px;
       margin-top: 8px;
       cursor: pointer;
+      font-size: 14px;
     }
 
     button:disabled {
@@ -57,6 +63,11 @@
     .result {
       margin-top: 10px;
       display: none;
+    }
+
+    #withdrawText {
+      font-size: 13px;
+      margin-top: 5px;
     }
   </style>
 </head>
@@ -83,6 +94,7 @@
     <h4 id="name"></h4>
     <p id="acc"></p>
     <p id="bal"></p>
+    <p id="withdrawText"></p>
   </div>
 </div>
 
@@ -92,7 +104,7 @@ let otpTime = 0;
 let countdown = 60;
 let timerInterval = null;
 
-// 🔐 SEND OTP
+// SEND OTP
 async function sendOTP() {
   let email = document.getElementById("email").value.trim();
 
@@ -123,7 +135,7 @@ async function sendOTP() {
   startTimer();
 }
 
-// ⏱️ TIMER
+// TIMER
 function startTimer() {
   let timerText = document.getElementById("timerText");
   let btn = document.getElementById("otpBtn");
@@ -144,7 +156,7 @@ function startTimer() {
   }, 1000);
 }
 
-// 💰 CHECK BALANCE
+// CHECK BALANCE
 async function checkBalance() {
   let input = document.getElementById("user").value.toLowerCase().trim();
   let email = document.getElementById("email").value.toLowerCase().trim();
@@ -171,21 +183,27 @@ async function checkBalance() {
     let userAcc = user.account_no.toString().trim();
 
     let isNumber = !isNaN(input);
-
-    let matchUser = false;
-
-    if (isNumber) {
-      matchUser = (userAcc === input);
-    } else {
-      matchUser = (userName === input);
-    }
-
+    let matchUser = isNumber ? (userAcc === input) : (userName === input);
     let matchEmail = (userEmail === email);
 
     if (matchUser && matchEmail) {
+      let balance = parseFloat(user.balance);
+
       document.getElementById("name").innerText = user.name.toUpperCase();
       document.getElementById("acc").innerText = "Account: " + user.account_no;
-      document.getElementById("bal").innerText = "Balance: ₹" + user.balance;
+      document.getElementById("bal").innerText = "Balance: ₹" + balance;
+
+      let withdrawMsg = document.getElementById("withdrawText");
+
+      if (balance > 0 && user.withdraw === "Yes") {
+        withdrawMsg.innerText = "✔ Available to Withdraw";
+        withdrawMsg.style.color = "green";
+      } else if (balance > 0 && user.withdraw === "No") {
+        withdrawMsg.innerText = "✖ Not Available to Withdraw";
+        withdrawMsg.style.color = "red";
+      } else {
+        withdrawMsg.innerText = "";
+      }
 
       document.getElementById("result").style.display = "block";
       found = true;
@@ -196,7 +214,6 @@ async function checkBalance() {
     alert("Invalid details ❌");
   }
 
-  // 🔥 CAPTCHA clear after check
   grecaptcha.reset();
 }
 </script>
