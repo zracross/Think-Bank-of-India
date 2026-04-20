@@ -57,22 +57,42 @@
       display: none;
     }
 
-    #result {
+    /* UPI RESULT STYLE */
+    #resultScreen {
       display: none;
-      margin-top: 10px;
+      text-align: center;
     }
 
-    #bal {
-      font-weight: bold;
-      font-size: 18px;
+    .upi-card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .success {
+      font-size: 40px;
       color: green;
+    }
+
+    .balance {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 10px;
+      color: #16a34a;
+    }
+
+    .small {
+      font-size: 14px;
+      color: gray;
     }
   </style>
 </head>
 
 <body>
 
-<div class="card">
+<div class="card" id="mainCard">
+
   <h3>🏦 Think Bank</h3>
 
   <input id="user" placeholder="Name or Account No">
@@ -83,24 +103,31 @@
   <button id="otpBtn" onclick="sendOTP()">Send OTP</button>
   <p id="timerText"></p>
 
-  <!-- OTP Section -->
   <div id="otpSection">
     <input id="otp" placeholder="Enter OTP">
     <button onclick="checkBalance()">Check Balance</button>
   </div>
 
-  <!-- Result -->
-  <div id="result">
-    <h4 id="name"></h4>
-    <p id="acc"></p>
-    <p id="bal"></p>
+</div>
+
+
+<!-- RESULT SCREEN -->
+<div id="resultScreen">
+  <div class="upi-card">
+    <div class="success">✔</div>
+    <h3 id="name"></h3>
+    <p id="acc" class="small"></p>
+    <div id="bal" class="balance"></div>
     <p id="withdrawText"></p>
   </div>
 </div>
 
+
 <script>
 let generatedOTP = "";
 let otpTime = 0;
+let countdown = 60;
+let timerInterval = null;
 
 // SEND OTP
 async function sendOTP() {
@@ -118,6 +145,7 @@ async function sendOTP() {
 
   generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
   otpTime = Date.now();
+  countdown = 60;
 
   await fetch("https://script.google.com/macros/s/AKfycbzTfkw41vJ7OUUlTyN7MLg-aZB8ULTyKmNtMcrvyqzraArFLbjXX79YHvYtSF9zOML2Ag/exec", {
     method: "POST",
@@ -126,8 +154,29 @@ async function sendOTP() {
 
   alert("OTP Sent 📧");
 
-  // SHOW OTP BOX
   document.getElementById("otpSection").style.display = "block";
+  startTimer();
+}
+
+// TIMER
+function startTimer() {
+  let timerText = document.getElementById("timerText");
+  let btn = document.getElementById("otpBtn");
+
+  btn.disabled = true;
+
+  clearInterval(timerInterval);
+
+  timerInterval = setInterval(() => {
+    if (countdown <= 0) {
+      clearInterval(timerInterval);
+      timerText.innerText = "Resend OTP 🔁";
+      btn.disabled = false;
+    } else {
+      timerText.innerText = "Resend in " + countdown + " sec";
+      countdown--;
+    }
+  }, 1000);
 }
 
 // CHECK BALANCE
@@ -149,8 +198,6 @@ async function checkBalance() {
   let res = await fetch("https://script.google.com/macros/s/AKfycbzTfkw41vJ7OUUlTyN7MLg-aZB8ULTyKmNtMcrvyqzraArFLbjXX79YHvYtSF9zOML2Ag/exec");
   let data = await res.json();
 
-  let found = false;
-
   data.forEach(user => {
     let name = user.name.toLowerCase().trim();
     let mail = user.email.toLowerCase().trim();
@@ -160,35 +207,35 @@ async function checkBalance() {
     let matchUser = isNumber ? acc === input : name === input;
 
     if (matchUser && mail === email) {
+
       let bal = parseFloat(user.balance);
       let withdraw = (user.withdraw || "").toLowerCase().trim();
 
+      // HIDE MAIN UI
+      document.getElementById("mainCard").style.display = "none";
+
+      // SHOW RESULT
+      document.getElementById("resultScreen").style.display = "block";
+
       document.getElementById("name").innerText = user.name.toUpperCase();
       document.getElementById("acc").innerText = "Account: " + acc;
-      document.getElementById("bal").innerText = "Balance: ₹" + bal;
+      document.getElementById("bal").innerText = "₹ " + bal;
 
       let msg = document.getElementById("withdrawText");
 
       if (bal > 0 && withdraw === "yes") {
-        msg.innerText = "✔ Your balance is able to withdraw";
+        msg.innerText = "Your balance is available to withdraw";
         msg.style.color = "green";
       } 
       else if (bal > 0 && withdraw === "no") {
-        msg.innerText = "✖ Your balance is not able to withdraw";
+        msg.innerText = "Your balance is not available to withdraw";
         msg.style.color = "red";
       } 
       else {
         msg.innerText = "";
       }
-
-      document.getElementById("result").style.display = "block";
-      found = true;
     }
   });
-
-  if (!found) {
-    alert("Invalid details ❌");
-  }
 
   grecaptcha.reset();
 }
