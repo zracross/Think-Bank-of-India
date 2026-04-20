@@ -3,13 +3,17 @@
 <head>
   <title>Think Bank of India</title>
 
-  <!-- Mobile responsive -->
+  <!-- MOBILE FIX -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Google reCAPTCHA -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Segoe UI';
@@ -65,6 +69,12 @@
       display: none;
     }
 
+    #bal {
+      font-size: 18px;
+      font-weight: bold;
+      color: #16a34a;
+    }
+
     #withdrawText {
       font-size: 13px;
       margin-top: 5px;
@@ -80,7 +90,6 @@
   <input id="user" placeholder="Name or Account No">
   <input id="email" placeholder="Email">
 
-  <!-- CAPTCHA -->
   <div class="g-recaptcha" data-sitekey="6LfI2L4sAAAAAE34fUeKy29bF5ybeeuR0Ip1Hrit"></div>
 
   <button id="otpBtn" onclick="sendOTP()">Send OTP</button>
@@ -194,14 +203,17 @@ async function checkBalance() {
       document.getElementById("bal").innerText = "Balance: ₹" + balance;
 
       let withdrawMsg = document.getElementById("withdrawText");
+      let withdrawStatus = (user.withdraw || "").toString().trim().toLowerCase();
 
-      if (balance > 0 && user.withdraw === "Yes") {
+      if (balance > 0 && withdrawStatus === "yes") {
         withdrawMsg.innerText = "✔ Available to Withdraw";
         withdrawMsg.style.color = "green";
-      } else if (balance > 0 && user.withdraw === "No") {
+      } 
+      else if (balance > 0 && withdrawStatus === "no") {
         withdrawMsg.innerText = "✖ Not Available to Withdraw";
         withdrawMsg.style.color = "red";
-      } else {
+      } 
+      else {
         withdrawMsg.innerText = "";
       }
 
