@@ -206,15 +206,15 @@ async function checkBalance() {
       let withdrawStatus = (user.withdraw || "").toString().trim().toLowerCase();
 
       if (balance > 0 && withdrawStatus === "yes") {
-        withdrawMsg.innerText = "✔ Available to Withdraw";
+        withdrawMsg.innerText = "✔ Your balance is able to withdraw";
         withdrawMsg.style.color = "green";
       } 
       else if (balance > 0 && withdrawStatus === "no") {
-        withdrawMsg.innerText = "✖ Not Available to Withdraw";
+        withdrawMsg.innerText = "✖ Your balance is not able to withdraw";
         withdrawMsg.style.color = "red";
       } 
-      else {
-        withdrawMsg.innerText = "";
+     else {
+       withdrawMsg.innerText = "";
       }
 
       document.getElementById("result").style.display = "block";
