@@ -6,25 +6,31 @@
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
   <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI'; }
-
     body {
       margin: 0;
-      background: linear-gradient(135deg, #0f172a, #1e40af);
+      font-family: 'Segoe UI';
+      background: #f1f5f9;
+    }
+
+    .navbar {
+      background: #1e40af;
+      color: white;
+      padding: 12px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      height: 100vh;
+    }
+
+    .container {
+      padding: 15px;
     }
 
     .card {
       background: white;
-      padding: 20px;
-      border-radius: 15px;
-      width: 95%;
-      max-width: 360px;
-      text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
     input {
@@ -32,193 +38,258 @@
       padding: 12px;
       margin: 8px 0;
       border-radius: 8px;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
     }
 
     button {
       width: 100%;
       padding: 12px;
-      margin-top: 8px;
-      border-radius: 8px;
       border: none;
+      border-radius: 8px;
       background: #2563eb;
       color: white;
+      margin-top: 8px;
       cursor: pointer;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
 
     .hidden { display: none; }
 
-    .title { font-weight: bold; margin-bottom: 10px; }
+    .label { font-size: 12px; color: gray; }
+    .value { font-weight: bold; }
 
-    .big { font-size: 18px; font-weight: bold; }
+    .timer { font-size: 12px; color: gray; }
 
-    .success { color: green; font-size: 30px; }
+    .logout {
+      cursor: pointer;
+      font-size: 14px;
+    }
 
-    .danger { color: red; }
-
-    .small { font-size: 13px; color: gray; }
   </style>
 </head>
 
 <body>
 
+<!-- NAVBAR -->
+<div class="navbar hidden" id="navbar">
+  <div>🏦 TBI Banking</div>
+  <div class="logout" onclick="logout()">Logout</div>
+</div>
+
+<div class="container">
+
 <!-- LOGIN -->
-<div class="card" id="loginPage">
-  <div class="title">🏦 Think Bank Login</div>
+<div id="loginPage" class="card">
+  <h3>Login</h3>
 
   <input id="user" placeholder="Name or Account No">
   <input id="email" placeholder="Email">
 
   <div class="g-recaptcha" data-sitekey="6LfI2L4sAAAAAE34fUeKy29bF5ybeeuR0Ip1Hrit"></div>
 
-  <button onclick="sendOTP()">Send OTP</button>
+  <button id="otpBtn" onclick="sendOTP()">Send OTP</button>
+  <p id="timer" class="timer"></p>
 
-  <div id="otpSection" class="hidden">
+  <div id="otpBox" class="hidden">
     <input id="otp" placeholder="Enter OTP">
     <button onclick="verifyOTP()">Login</button>
   </div>
 </div>
 
 <!-- DASHBOARD -->
-<div class="card hidden" id="dashboard">
-  <div class="title">Welcome</div>
+<div id="dashboard" class="hidden">
+  <div class="card">
+    <h3>Dashboard</h3>
 
-  <button onclick="openAccount()">Account Details</button>
-  <button disabled>Services (Coming Soon)</button>
+    <div class="grid">
+      <button onclick="openAccount()">Account Details</button>
+      <button disabled>Services</button>
+    </div>
+  </div>
 </div>
 
 <!-- PIN PAGE -->
-<div class="card hidden" id="pinPage">
-  <div class="title">Enter UPI PIN</div>
-  <input id="pin" type="password" placeholder="Enter PIN">
-  <button onclick="verifyPIN()">Verify PIN</button>
+<div id="pinPage" class="hidden">
+  <div class="card">
+    <h3>Enter PIN</h3>
+    <input id="pin" type="password" placeholder="Enter PIN">
+    <button onclick="togglePin()">Show/Hide PIN</button>
+    <button onclick="verifyPIN()">Verify</button>
+  </div>
 </div>
 
 <!-- ACCOUNT DETAILS -->
-<div class="card hidden" id="accountPage">
-  <div class="success">✔</div>
-  <h3 id="name"></h3>
-  <p id="acc"></p>
-  <p id="bal" class="big"></p>
-  <p id="withdrawText"></p>
+<div id="accountPage" class="hidden">
 
-  <hr>
+  <div class="card">
+    <h3>Account Summary</h3>
+    <p><b id="name"></b></p>
+    <p id="acc"></p>
+    <p id="bal"></p>
+    <p id="withdrawText"></p>
+  </div>
 
-  <div class="small" id="details"></div>
+  <div class="card">
+    <h4>Personal Details</h4>
+    <p class="label">Aadhar</p><p class="value" id="aadhaar"></p>
+    <p class="label">PAN</p><p class="value" id="pan"></p>
+    <p class="label">Phone</p><p class="value" id="phone"></p>
+    <p class="label">Email</p><p class="value" id="mail"></p>
+    <p class="label">Address</p><p class="value" id="address"></p>
+  </div>
+
+  <div class="card">
+    <h4>Bank Details</h4>
+    <p class="label">IFSC</p><p class="value" id="ifsc"></p>
+    <p class="label">Account Type</p><p class="value" id="type"></p>
+    <p class="label">CIF No</p><p class="value" id="cif"></p>
+    <p class="label">KYC</p><p class="value" id="kyc"></p>
+    <p class="label">TIN No</p><p class="value" id="tin"></p>
+    <p class="label">TBI Card</p><p class="value" id="card"></p>
+    <p class="label">Loan</p><p class="value" id="loan"></p>
+  </div>
+
+</div>
+
 </div>
 
 <script>
-let generatedOTP = "";
+let otp = "";
 let otpTime = 0;
-let loggedUser = null;
+let timerInt;
+let userData = null;
 
-// SEND OTP
+// OTP SEND
 async function sendOTP() {
-  let email = document.getElementById("email").value.trim();
+  let email = document.getElementById("email").value;
 
   if (!grecaptcha.getResponse()) {
-    alert("Complete CAPTCHA ❌");
+    alert("Complete CAPTCHA");
     return;
   }
 
-  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  otp = Math.floor(100000 + Math.random()*900000).toString();
   otpTime = Date.now();
 
   await fetch("https://script.google.com/macros/s/AKfycbzTfkw41vJ7OUUlTyN7MLg-aZB8ULTyKmNtMcrvyqzraArFLbjXX79YHvYtSF9zOML2Ag/exec", {
     method: "POST",
-    body: JSON.stringify({ email: email, otp: generatedOTP })
+    body: JSON.stringify({email: email, otp: otp})
   });
 
-  alert("OTP Sent 📧");
-  document.getElementById("otpSection").classList.remove("hidden");
+  document.getElementById("otpBox").classList.remove("hidden");
+
+  startTimer();
+}
+
+// TIMER
+function startTimer() {
+  let t = 60;
+  let el = document.getElementById("timer");
+
+  clearInterval(timerInt);
+
+  timerInt = setInterval(()=>{
+    if(t<=0){
+      el.innerText = "Resend OTP";
+      document.getElementById("otpBtn").disabled = false;
+      clearInterval(timerInt);
+    } else {
+      el.innerText = "Resend in "+t+" sec";
+      document.getElementById("otpBtn").disabled = true;
+      t--;
+    }
+  },1000);
 }
 
 // VERIFY OTP
 async function verifyOTP() {
-  let otp = document.getElementById("otp").value;
-
-  if (otp !== generatedOTP) {
-    alert("Wrong OTP ❌");
+  if(document.getElementById("otp").value !== otp){
+    alert("Wrong OTP");
     return;
   }
 
-  if (Date.now() - otpTime > 120000) {
-    alert("OTP expired");
-    return;
-  }
-
-  let input = document.getElementById("user").value.toLowerCase().trim();
-  let email = document.getElementById("email").value.toLowerCase().trim();
+  let input = document.getElementById("user").value.toLowerCase();
+  let email = document.getElementById("email").value.toLowerCase();
 
   let res = await fetch("https://script.google.com/macros/s/AKfycbzTfkw41vJ7OUUlTyN7MLg-aZB8ULTyKmNtMcrvyqzraArFLbjXX79YHvYtSF9zOML2Ag/exec");
   let data = await res.json();
 
-  data.forEach(user => {
-    let isNumber = !isNaN(input);
-    let matchUser = isNumber 
-      ? user.account_no == input 
-      : user.name.toLowerCase() == input;
+  data.forEach(u=>{
+    let isNum = !isNaN(input);
+    let match = isNum ? u.account_no==input : u.name.toLowerCase()==input;
 
-    if (matchUser && user.email.toLowerCase() == email) {
-      loggedUser = user;
+    if(match && u.email.toLowerCase()==email){
+      userData = u;
     }
   });
 
-  if (!loggedUser) {
-    alert("Invalid login ❌");
+  if(!userData){
+    alert("Invalid login");
     return;
   }
 
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("dashboard").classList.remove("hidden");
+  document.getElementById("navbar").classList.remove("hidden");
 }
 
-// OPEN ACCOUNT
-function openAccount() {
+// ACCOUNT
+function openAccount(){
   document.getElementById("dashboard").classList.add("hidden");
   document.getElementById("pinPage").classList.remove("hidden");
 }
 
-// VERIFY PIN
-function verifyPIN() {
-  let pin = document.getElementById("pin").value;
-
-  if (pin !== loggedUser.pin) {
-    alert("Wrong PIN ❌");
+// PIN
+function verifyPIN(){
+  if(document.getElementById("pin").value !== userData.pin){
+    alert("Wrong PIN");
     return;
   }
+
+  let u = userData;
 
   document.getElementById("pinPage").classList.add("hidden");
   document.getElementById("accountPage").classList.remove("hidden");
 
-  let u = loggedUser;
+  document.getElementById("name").innerText = u.name;
+  document.getElementById("acc").innerText = "A/C: "+u.account_no;
+  document.getElementById("bal").innerText = "Balance: ₹"+u.balance;
 
-  document.getElementById("name").innerText = u.name.toUpperCase();
-  document.getElementById("acc").innerText = "A/C: " + u.account_no;
-  document.getElementById("bal").innerText = "₹ " + u.balance;
+  document.getElementById("aadhaar").innerText = u.aadhaar;
+  document.getElementById("pan").innerText = u.pan;
+  document.getElementById("phone").innerText = u.mobile;
+  document.getElementById("mail").innerText = u.email;
+  document.getElementById("address").innerText = u.address;
 
-  let withdraw = (u.withdraw || "").toLowerCase();
+  document.getElementById("ifsc").innerText = u.ifsc;
+  document.getElementById("type").innerText = u.account_type;
+  document.getElementById("cif").innerText = u.cif;
+  document.getElementById("kyc").innerText = u.kyc;
+  document.getElementById("tin").innerText = u.tin;
+  document.getElementById("card").innerText = u.card;
+  document.getElementById("loan").innerText = u.loan;
 
-  let msg = document.getElementById("withdrawText");
-
-  if (u.balance > 0 && withdraw === "yes") {
-    msg.innerText = "Your balance is available to withdraw";
-    msg.style.color = "green";
-  } else if (u.balance > 0 && withdraw === "no") {
-    msg.innerText = "Your balance is not available to withdraw";
-    msg.style.color = "red";
+  if(u.balance>0 && u.withdraw.toLowerCase()=="yes"){
+    document.getElementById("withdrawText").innerText="Withdraw Available";
+  } else {
+    document.getElementById("withdrawText").innerText="";
   }
+}
 
-  // FULL DETAILS
-  document.getElementById("details").innerHTML = `
-    IFSC: ${u.ifsc}<br>
-    Aadhar: ${u.aadhaar}<br>
-    PAN: ${u.pan}<br>
-    Phone: ${u.mobile}<br>
-    Email: ${u.email}<br>
-    Address: ${u.address}<br>
-    Loan: ${u.loan}
-  `;
+// PIN SHOW
+function togglePin(){
+  let p=document.getElementById("pin");
+  p.type = p.type==="password"?"text":"password";
+}
+
+// LOGOUT
+function logout(){
+  location.reload();
 }
 </script>
 
