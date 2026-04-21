@@ -304,13 +304,13 @@ function verifyPIN(){
 
   let withdraw = (u.withdraw || "").toLowerCase().trim();
 
-if (u.balance > 0 && withdraw === "yes") {
-  document.getElementById("withdrawText").innerText = "Withdraw Available";
-} else if (u.balance > 0 && withdraw === "no") {
-  document.getElementById("withdrawText").innerText = "Withdraw Not Available";
-} else {
-  document.getElementById("withdrawText").innerText = "";
-}
+  if (u.balance > 0 && withdraw === "yes") {
+    document.getElementById("withdrawText").innerText = "Withdraw Available";
+  } else if (u.balance > 0 && withdraw === "no") {
+    document.getElementById("withdrawText").innerText = "Withdraw Not Available";
+  } else {
+    document.getElementById("withdrawText").innerText = "";
+  }
 
 // PIN TOGGLE
 function togglePin(){
