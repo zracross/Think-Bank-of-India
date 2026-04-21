@@ -18,10 +18,13 @@
       padding: 12px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
 
     .container {
       padding: 15px;
+      max-width: 900px;
+      margin: auto;
     }
 
     .card {
@@ -51,6 +54,10 @@
       cursor: pointer;
     }
 
+    .secondary {
+      background: #64748b;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -64,19 +71,22 @@
 
     .timer { font-size: 12px; color: gray; }
 
-    @media(min-width:768px){
-      .container{
-        max-width: 900px;
-        margin: auto;
-      }
+    .brand {
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      color: #1e40af;
+      margin-bottom: 10px;
     }
+
   </style>
 </head>
 
 <body>
 
+<!-- NAVBAR -->
 <div class="navbar hidden" id="navbar">
-  <div>🏦 Think Bank</div>
+  <div>🏦 THINK BANK OF INDIA</div>
   <div>
     <span id="userTop"></span> |
     <span onclick="logout()" style="cursor:pointer;">Logout</span>
@@ -87,6 +97,7 @@
 
 <!-- LOGIN -->
 <div id="loginPage" class="card">
+  <div class="brand">🏦 THINK BANK OF INDIA</div>
   <h3>Login</h3>
 
   <input id="user" placeholder="Name or Account No">
@@ -107,6 +118,7 @@
 <div id="dashboard" class="hidden">
   <div class="card">
     <h3>Dashboard</h3>
+
     <div class="grid">
       <button onclick="openAccount()">Account Details</button>
       <button disabled>Services</button>
@@ -114,7 +126,7 @@
   </div>
 </div>
 
-<!-- PIN -->
+<!-- PIN PAGE -->
 <div id="pinPage" class="hidden">
   <div class="card">
     <h3>Enter PIN</h3>
@@ -126,10 +138,11 @@
     </div>
 
     <button onclick="verifyPIN()">Verify</button>
+    <button class="secondary" onclick="goDashboard()">⬅ Back</button>
   </div>
 </div>
 
-<!-- ACCOUNT -->
+<!-- ACCOUNT DETAILS -->
 <div id="accountPage" class="hidden">
 
   <div class="card">
@@ -139,10 +152,12 @@
     <p id="bal"></p>
     <p id="loan"></p>
     <p id="withdrawText"></p>
+
+    <button class="secondary" onclick="goDashboard()">⬅ Back to Dashboard</button>
   </div>
 
   <div class="card">
-    <h4>Personal</h4>
+    <h4>Personal Details</h4>
     <p class="label">Aadhaar</p><p id="aadhaar" class="value"></p>
     <p class="label">PAN</p><p id="pan" class="value"></p>
     <p class="label">Phone</p><p id="phone" class="value"></p>
@@ -151,9 +166,9 @@
   </div>
 
   <div class="card">
-    <h4>Bank</h4>
+    <h4>Bank Details</h4>
     <p class="label">IFSC</p><p id="ifsc" class="value"></p>
-    <p class="label">Type</p><p id="type" class="value"></p>
+    <p class="label">Account Type</p><p id="type" class="value"></p>
     <p class="label">CIF</p><p id="cif" class="value"></p>
     <p class="label">KYC</p><p id="kyc" class="value"></p>
     <p class="label">TIN</p><p id="tin" class="value"></p>
@@ -171,17 +186,7 @@ let timerInt;
 let userData = null;
 let sessionTime = 15*60*1000;
 
-// SESSION CHECK
-window.onload = ()=>{
-  let s = localStorage.getItem("session");
-  if(s && Date.now()-s < sessionTime){
-    alert("Session active");
-  } else {
-    localStorage.clear();
-  }
-}
-
-// SEND OTP
+// OTP SEND
 async function sendOTP(){
   let email = document.getElementById("email").value;
 
@@ -199,7 +204,6 @@ async function sendOTP(){
   });
 
   document.getElementById("otpBox").classList.remove("hidden");
-
   startTimer();
 }
 
@@ -248,18 +252,22 @@ async function verifyOTP(){
     return;
   }
 
-  localStorage.setItem("session", Date.now());
-
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("dashboard").classList.remove("hidden");
   document.getElementById("navbar").classList.remove("hidden");
   document.getElementById("userTop").innerText=userData.name;
 }
 
-// ACCOUNT
+// NAVIGATION
 function openAccount(){
   document.getElementById("dashboard").classList.add("hidden");
   document.getElementById("pinPage").classList.remove("hidden");
+}
+
+function goDashboard(){
+  document.getElementById("accountPage").classList.add("hidden");
+  document.getElementById("pinPage").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
 }
 
 // PIN VERIFY
@@ -294,9 +302,14 @@ function verifyPIN(){
   document.getElementById("tin").innerText=u.tin;
   document.getElementById("card").innerText=u.card;
 
-  if(u.balance>0 && u.withdraw.toLowerCase()=="yes"){
-    document.getElementById("withdrawText").innerText="Withdraw Available";
-  }
+  let withdraw = (u.withdraw || "").toLowerCase().trim();
+
+if (u.balance > 0 && withdraw === "yes") {
+  document.getElementById("withdrawText").innerText = "Withdraw Available";
+} else if (u.balance > 0 && withdraw === "no") {
+  document.getElementById("withdrawText").innerText = "Withdraw Not Available";
+} else {
+  document.getElementById("withdrawText").innerText = "";
 }
 
 // PIN TOGGLE
@@ -307,7 +320,6 @@ function togglePin(){
 
 // LOGOUT
 function logout(){
-  localStorage.clear();
   location.reload();
 }
 </script>
