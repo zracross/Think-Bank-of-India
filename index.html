@@ -18,7 +18,6 @@
       padding: 12px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
     }
 
     .container {
@@ -65,20 +64,23 @@
 
     .timer { font-size: 12px; color: gray; }
 
-    .logout {
-      cursor: pointer;
-      font-size: 14px;
+    @media(min-width:768px){
+      .container{
+        max-width: 900px;
+        margin: auto;
+      }
     }
-
   </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
 <div class="navbar hidden" id="navbar">
-  <div>🏦 TBI Banking</div>
-  <div class="logout" onclick="logout()">Logout</div>
+  <div>🏦 Think Bank</div>
+  <div>
+    <span id="userTop"></span> |
+    <span onclick="logout()" style="cursor:pointer;">Logout</span>
+  </div>
 </div>
 
 <div class="container">
@@ -105,7 +107,6 @@
 <div id="dashboard" class="hidden">
   <div class="card">
     <h3>Dashboard</h3>
-
     <div class="grid">
       <button onclick="openAccount()">Account Details</button>
       <button disabled>Services</button>
@@ -113,45 +114,50 @@
   </div>
 </div>
 
-<!-- PIN PAGE -->
+<!-- PIN -->
 <div id="pinPage" class="hidden">
   <div class="card">
     <h3>Enter PIN</h3>
-    <input id="pin" type="password" placeholder="Enter PIN">
-    <button onclick="togglePin()">Show/Hide PIN</button>
+
+    <div style="position:relative;">
+      <input id="pin" type="password" placeholder="Enter PIN">
+      <span onclick="togglePin()" 
+        style="position:absolute; right:15px; top:14px; cursor:pointer;">👁</span>
+    </div>
+
     <button onclick="verifyPIN()">Verify</button>
   </div>
 </div>
 
-<!-- ACCOUNT DETAILS -->
+<!-- ACCOUNT -->
 <div id="accountPage" class="hidden">
 
   <div class="card">
     <h3>Account Summary</h3>
-    <p><b id="name"></b></p>
+    <p id="name"></p>
     <p id="acc"></p>
     <p id="bal"></p>
+    <p id="loan"></p>
     <p id="withdrawText"></p>
   </div>
 
   <div class="card">
-    <h4>Personal Details</h4>
-    <p class="label">Aadhar</p><p class="value" id="aadhaar"></p>
-    <p class="label">PAN</p><p class="value" id="pan"></p>
-    <p class="label">Phone</p><p class="value" id="phone"></p>
-    <p class="label">Email</p><p class="value" id="mail"></p>
-    <p class="label">Address</p><p class="value" id="address"></p>
+    <h4>Personal</h4>
+    <p class="label">Aadhaar</p><p id="aadhaar" class="value"></p>
+    <p class="label">PAN</p><p id="pan" class="value"></p>
+    <p class="label">Phone</p><p id="phone" class="value"></p>
+    <p class="label">Email</p><p id="mail" class="value"></p>
+    <p class="label">Address</p><p id="address" class="value"></p>
   </div>
 
   <div class="card">
-    <h4>Bank Details</h4>
-    <p class="label">IFSC</p><p class="value" id="ifsc"></p>
-    <p class="label">Account Type</p><p class="value" id="type"></p>
-    <p class="label">CIF No</p><p class="value" id="cif"></p>
-    <p class="label">KYC</p><p class="value" id="kyc"></p>
-    <p class="label">TIN No</p><p class="value" id="tin"></p>
-    <p class="label">TBI Card</p><p class="value" id="card"></p>
-    <p class="label">Loan</p><p class="value" id="loan"></p>
+    <h4>Bank</h4>
+    <p class="label">IFSC</p><p id="ifsc" class="value"></p>
+    <p class="label">Type</p><p id="type" class="value"></p>
+    <p class="label">CIF</p><p id="cif" class="value"></p>
+    <p class="label">KYC</p><p id="kyc" class="value"></p>
+    <p class="label">TIN</p><p id="tin" class="value"></p>
+    <p class="label">Card</p><p id="card" class="value"></p>
   </div>
 
 </div>
@@ -163,12 +169,23 @@ let otp = "";
 let otpTime = 0;
 let timerInt;
 let userData = null;
+let sessionTime = 15*60*1000;
 
-// OTP SEND
-async function sendOTP() {
+// SESSION CHECK
+window.onload = ()=>{
+  let s = localStorage.getItem("session");
+  if(s && Date.now()-s < sessionTime){
+    alert("Session active");
+  } else {
+    localStorage.clear();
+  }
+}
+
+// SEND OTP
+async function sendOTP(){
   let email = document.getElementById("email").value;
 
-  if (!grecaptcha.getResponse()) {
+  if(!grecaptcha.getResponse()){
     alert("Complete CAPTCHA");
     return;
   }
@@ -177,8 +194,8 @@ async function sendOTP() {
   otpTime = Date.now();
 
   await fetch("https://script.google.com/macros/s/AKfycbzTfkw41vJ7OUUlTyN7MLg-aZB8ULTyKmNtMcrvyqzraArFLbjXX79YHvYtSF9zOML2Ag/exec", {
-    method: "POST",
-    body: JSON.stringify({email: email, otp: otp})
+    method:"POST",
+    body: JSON.stringify({email, otp})
   });
 
   document.getElementById("otpBox").classList.remove("hidden");
@@ -187,44 +204,42 @@ async function sendOTP() {
 }
 
 // TIMER
-function startTimer() {
-  let t = 60;
-  let el = document.getElementById("timer");
+function startTimer(){
+  let t=60;
+  let el=document.getElementById("timer");
 
-  clearInterval(timerInt);
-
-  timerInt = setInterval(()=>{
+  timerInt=setInterval(()=>{
     if(t<=0){
-      el.innerText = "Resend OTP";
-      document.getElementById("otpBtn").disabled = false;
+      el.innerText="Resend OTP";
+      document.getElementById("otpBtn").disabled=false;
       clearInterval(timerInt);
     } else {
-      el.innerText = "Resend in "+t+" sec";
-      document.getElementById("otpBtn").disabled = true;
+      el.innerText="Resend in "+t+" sec";
+      document.getElementById("otpBtn").disabled=true;
       t--;
     }
   },1000);
 }
 
 // VERIFY OTP
-async function verifyOTP() {
-  if(document.getElementById("otp").value !== otp){
+async function verifyOTP(){
+  if(document.getElementById("otp").value!==otp){
     alert("Wrong OTP");
     return;
   }
 
-  let input = document.getElementById("user").value.toLowerCase();
-  let email = document.getElementById("email").value.toLowerCase();
+  let input=document.getElementById("user").value.toLowerCase();
+  let email=document.getElementById("email").value.toLowerCase();
 
-  let res = await fetch("https://script.google.com/macros/s/AKfycbzTfkw41vJ7OUUlTyN7MLg-aZB8ULTyKmNtMcrvyqzraArFLbjXX79YHvYtSF9zOML2Ag/exec");
-  let data = await res.json();
+  let res=await fetch("https://script.google.com/macros/s/AKfycbzTfkw41vJ7OUUlTyN7MLg-aZB8ULTyKmNtMcrvyqzraArFLbjXX79YHvYtSF9zOML2Ag/exec");
+  let data=await res.json();
 
   data.forEach(u=>{
-    let isNum = !isNaN(input);
-    let match = isNum ? u.account_no==input : u.name.toLowerCase()==input;
+    let isNum=!isNaN(input);
+    let match=isNum ? u.account_no==input : u.name.toLowerCase()==input;
 
     if(match && u.email.toLowerCase()==email){
-      userData = u;
+      userData=u;
     }
   });
 
@@ -233,9 +248,12 @@ async function verifyOTP() {
     return;
   }
 
+  localStorage.setItem("session", Date.now());
+
   document.getElementById("loginPage").classList.add("hidden");
   document.getElementById("dashboard").classList.remove("hidden");
   document.getElementById("navbar").classList.remove("hidden");
+  document.getElementById("userTop").innerText=userData.name;
 }
 
 // ACCOUNT
@@ -244,51 +262,52 @@ function openAccount(){
   document.getElementById("pinPage").classList.remove("hidden");
 }
 
-// PIN
+// PIN VERIFY
 function verifyPIN(){
-  if(document.getElementById("pin").value !== userData.pin){
+  if(document.getElementById("pin").value!==userData.pin){
     alert("Wrong PIN");
     return;
   }
 
-  let u = userData;
+  let u=userData;
 
   document.getElementById("pinPage").classList.add("hidden");
   document.getElementById("accountPage").classList.remove("hidden");
 
-  document.getElementById("name").innerText = u.name;
-  document.getElementById("acc").innerText = "A/C: "+u.account_no;
-  document.getElementById("bal").innerText = "Balance: ₹"+u.balance;
+  let loan = u.loan ? u.loan : 0;
 
-  document.getElementById("aadhaar").innerText = u.aadhaar;
-  document.getElementById("pan").innerText = u.pan;
-  document.getElementById("phone").innerText = u.mobile;
-  document.getElementById("mail").innerText = u.email;
-  document.getElementById("address").innerText = u.address;
+  document.getElementById("name").innerText=u.name;
+  document.getElementById("acc").innerText="A/C: "+u.account_no;
+  document.getElementById("bal").innerText="Balance: ₹ "+u.balance;
+  document.getElementById("loan").innerText="Loan: ₹ "+loan;
 
-  document.getElementById("ifsc").innerText = u.ifsc;
-  document.getElementById("type").innerText = u.account_type;
-  document.getElementById("cif").innerText = u.cif;
-  document.getElementById("kyc").innerText = u.kyc;
-  document.getElementById("tin").innerText = u.tin;
-  document.getElementById("card").innerText = u.card;
-  document.getElementById("loan").innerText = u.loan;
+  document.getElementById("aadhaar").innerText=u.aadhaar;
+  document.getElementById("pan").innerText=u.pan;
+  document.getElementById("phone").innerText=u.mobile;
+  document.getElementById("mail").innerText=u.email;
+  document.getElementById("address").innerText=u.address;
+
+  document.getElementById("ifsc").innerText=u.ifsc;
+  document.getElementById("type").innerText=u.account_type;
+  document.getElementById("cif").innerText=u.cif;
+  document.getElementById("kyc").innerText=u.kyc;
+  document.getElementById("tin").innerText=u.tin;
+  document.getElementById("card").innerText=u.card;
 
   if(u.balance>0 && u.withdraw.toLowerCase()=="yes"){
     document.getElementById("withdrawText").innerText="Withdraw Available";
-  } else {
-    document.getElementById("withdrawText").innerText="";
   }
 }
 
-// PIN SHOW
+// PIN TOGGLE
 function togglePin(){
   let p=document.getElementById("pin");
-  p.type = p.type==="password"?"text":"password";
+  p.type=p.type==="password"?"text":"password";
 }
 
 // LOGOUT
 function logout(){
+  localStorage.clear();
   location.reload();
 }
 </script>
